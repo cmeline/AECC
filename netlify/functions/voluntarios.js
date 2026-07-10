@@ -32,6 +32,22 @@ function seedVoluntarios() {
 
 let voluntarios = seedVoluntarios();
 
+// Quita acentos y pasa a minúsculas, igual que en socios.js
+function normalize(str) {
+  return String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+// Busca por nombre completo (o parcial), sin importar orden de palabras ni acentos
+function buscarPorNombre(query) {
+  const q = normalize(query);
+  const palabras = q.split(/\s+/).filter(Boolean);
+  return voluntarios.filter(v => {
+    if (v.id.includes(query)) return true;
+    const nombreCompleto = normalize(v.nombre + " " + v.apellidos);
+    return palabras.every(p => nombreCompleto.includes(p));
+  });
+}
+
 const HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Content-Type",
@@ -90,12 +106,7 @@ exports.handler = async function (event) {
       }
 
       if (params.q) {
-        const q = params.q.toLowerCase();
-        const results = voluntarios.filter(v =>
-          v.nombre.toLowerCase().includes(q) ||
-          v.apellidos.toLowerCase().includes(q) ||
-          v.id.includes(q)
-        );
+        const results = buscarPorNombre(params.q);
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
       }
 
