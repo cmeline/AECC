@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AECC · Sistemas internos (demo)</title>
+<style>
+  :root {
+    --aecc-green: #007a3d;
+    --aecc-green-dark: #00552a;
+    --aecc-green-pale: #e8f5ee;
+    --ink: #1c2b24;
+    --ink-soft: #5b6b63;
+    --border: #d8e3dd;
+    --bg: #f6f8f7;
+    --white: #ffffff;
+    --amber: #b8860b;
+    --amber-bg: #fdf3e0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+  }
+  header {
+    background: var(--aecc-green);
+    color: white;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.2px;
+  }
+  header .brand .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #ffd166;
+  }
+  header .subtitle {
+    font-size: 12px;
+    opacity: 0.85;
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 0 24px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    padding: 12px 18px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-bottom: 3px solid transparent;
+    user-select: none;
+  }
+  .tab.active {
+    color: var(--aecc-green-dark);
+    border-bottom-color: var(--aecc-green);
+  }
+  .tab .system-tag {
+    font-weight: 400;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-left: 4px;
+  }
+  main {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 20px;
+    padding: 20px 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .panel {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .search-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  input[type="text"], select, textarea {
+    font-family: inherit;
+    font-size: 13.5px;
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--white);
+    color: var(--ink);
+    width: 100%;
+  }
+  button {
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 9px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--aecc-green);
+    background: var(--aecc-green);
+    color: white;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  button.secondary {
+    background: var(--white);
+    color: var(--aecc-green-dark);
+  }
+  button.ghost {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--ink-soft);
+  }
+  button:hover { filter: brightness(0.95); }
+  .result-list {
+    max-height: 560px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .result-item {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .result-item:hover { border-color: var(--aecc-green); }
+  .result-item.selected {
+    border-color: var(--aecc-green);
+    background: var(--aecc-green-pale);
+  }
+  .result-item .name { font-weight: 600; font-size: 13.5px; }
+  .result-item .meta { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .id-badge {
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    background: var(--aecc-green-pale);
+    color: var(--aecc-green-dark);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+  .empty-state {
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    text-align: center;
+    padding: 60px 20px;
+  }
+  .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-header h2 { margin: 0 0 4px 0; font-size: 18px; }
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+    margin-bottom: 18px;
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .field.readonly .value {
+    font-size: 13.5px;
+    padding: 9px 0;
+    color: var(--ink);
+  }
+  .section-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin: 18px 0 8px 0;
+  }
+  .list-box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .list-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  .list-row:last-child { border-bottom: none; }
+  .list-row .desc { color: var(--ink-soft); }
+  .incidencia-row { background: var(--amber-bg); }
+  .add-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .add-row input { flex: 1; }
+  .save-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--ink);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s ease;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .pill.activo { background: var(--aecc-green-pale); color: var(--aecc-green-dark); }
+  .pill.espera { background: var(--amber-bg); color: var(--amber); }
+  select.estado-select { max-width: 160px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="dot"></span> AECC · Simulador de sistemas internos</div>
+  <div class="subtitle">Entorno de demostración — datos ficticios</div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="socios">CERM <span class="system-tag">(Salesforce · Socios)</span></div>
+  <div class="tab" data-tab="voluntarios">Mago <span class="system-tag">(Dynamics · Voluntariado)</span></div>
+</div>
+
+<main>
+  <div class="panel">
+    <div class="search-row">
+      <input type="text" id="searchInput" placeholder="Buscar por nombre o ID...">
+      <button id="searchBtn">Buscar</button>
+    </div>
+    <div class="search-row" style="margin-top:-4px;">
+      <button class="ghost" id="showAllBtn" style="flex:1;">Ver todos</button>
+      <button class="ghost" id="resetBtn" style="flex:1;" title="Restaura los datos de fábrica de esta pestaña">Reiniciar datos</button>
+    </div>
+    <div class="result-list" id="resultList"></div>
+  </div>
+
+  <div class="panel" id="detailPanel">
+    <div class="empty-state">Selecciona un registro de la izquierda, o búscalo por nombre / número de socio.</div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_BASE = ""; // mismo dominio, rutas /.netlify/functions/*
+let currentTab = "socios";
+let selected = null;
+
+const resultList = document.getElementById("resultList");
+const detailPanel = document.getElementById("detailPanel");
+const searchInput = document.getElementById("searchInput");
+const toast = document.getElementById("toast");
+
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    currentTab = tab.dataset.tab;
+    selected = null;
+    searchInput.value = "";
+    resultList.innerHTML = "";
+    detailPanel.innerHTML = '<div class="empty-state">Selecciona un registro de la izquierda, o búscalo por nombre / número' +
+      (currentTab === "socios" ? " de socio." : " de voluntario.") + '</div>';
+  });
+});
+
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2200);
+}
+
+function endpoint() {
+  return "/.netlify/functions/" + currentTab;
+}
+
+async function fetchAll() {
+  const res = await fetch(endpoint());
+  return res.json();
+}
+
+async function fetchSearch(q) {
+  const res = await fetch(endpoint() + "?q=" + encodeURIComponent(q));
+  return res.json();
+}
+
+async function fetchOne(id) {
+  const res = await fetch(endpoint() + "?id=" + encodeURIComponent(id));
+  return res.json();
+}
+
+function renderResults(items) {
+  resultList.innerHTML = "";
+  if (!items.length) {
+    resultList.innerHTML = '<div class="empty-state" style="padding:30px 10px;">Sin resultados.</div>';
+    return;
+  }
+  items.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "result-item" + (selected && selected.id === item.id ? " selected" : "");
+    if (currentTab === "socios") {
+      div.innerHTML = `<div class="name">${item.nombre} ${item.apellidos}</div>
+        <div class="meta"><span class="id-badge">${item.id}</span> · ${item.provincia}</div>`;
+    } else {
+      div.innerHTML = `<div class="name">${item.nombre} ${item.apellidos}</div>
+        <div class="meta"><span class="id-badge">${item.id}</span> · ${item.provincia} ·
+        <span class="pill ${item.estado === 'Activo' ? 'activo' : 'espera'}">${item.estado}</span></div>`;
+    }
+    div.addEventListener("click", () => selectItem(item.id));
+    resultList.appendChild(div);
+  });
+}
+
+async function selectItem(id) {
+  const item = await fetchOne(id);
+  selected = item;
+  document.querySelectorAll(".result-item").forEach(el => el.classList.remove("selected"));
+  renderDetail(item);
+  // reflect selection highlight
+  const items = Array.from(resultList.children);
+  items.forEach(el => {
+    if (el.querySelector(".id-badge") && el.querySelector(".id-badge").textContent === id) {
+      el.classList.add("selected");
+    }
+  });
+}
+
+function renderDetail(item) {
+  if (currentTab === "socios") {
+    renderSocioDetail(item);
+  } else {
+    renderVoluntarioDetail(item);
+  }
+}
+
+function renderSocioDetail(s) {
+  detailPanel.innerHTML = `
+    <div class="detail-header">
+      <div>
+        <h2>${s.nombre} ${s.apellidos}</h2>
+        <span class="id-badge">Nº Socio ${s.id}</span>
+      </div>
+      <button class="secondary" id="saveBtn">Guardar cambios</button>
+    </div>
+    <div class="field-grid">
+      <div class="field readonly"><label>Provincia</label><div class="value">${s.provincia}</div></div>
+      <div class="field readonly"><label>Antigüedad</label><div class="value">${s.fechaAlta}</div></div>
+      <div class="field">
+        <label>Cuota</label>
+        <input type="text" id="f-cuota" value="${s.cuota}">
+      </div>
+      <div class="field">
+        <label>Periodicidad</label>
+        <select id="f-periodicidad">
+          ${["Mensual","Trimestral","Anual"].map(p => `<option ${p===s.periodicidad?"selected":""}>${p}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field" style="grid-column: span 2;">
+        <label>Cuenta bancaria</label>
+        <input type="text" id="f-cuenta" value="${s.cuentaBancaria}">
+      </div>
+      <div class="field" style="grid-column: span 2;">
+        <label>Observaciones</label>
+        <textarea id="f-obs" rows="2">${s.observaciones || ""}</textarea>
+      </div>
+    </div>
+
+    <div class="section-title">Histórico de donativos</div>
+    <div class="list-box" id="donativosBox">
+      ${s.donativos.length ? s.donativos.map(d => `<div class="list-row"><span>${d.fecha} — ${d.concepto}</span><strong>${d.importe} €</strong></div>`).join("")
+        : '<div class="list-row desc">Sin donativos registrados.</div>'}
+    </div>
+    <div class="add-row">
+      <input type="text" id="newDonativoImporte" placeholder="Importe (€)">
+      <input type="text" id="newDonativoConcepto" placeholder="Concepto (ej. Donativo puntual)">
+      <button class="secondary" id="addDonativoBtn">Añadir</button>
+    </div>
+
+    <div class="section-title">Incidencias</div>
+    <div class="list-box" id="incidenciasBox">
+      ${s.incidencias.length ? s.incidencias.map(i => `<div class="list-row incidencia-row"><span class="desc">${i.fecha} — ${i.descripcion}</span></div>`).join("")
+        : '<div class="list-row desc">Sin incidencias.</div>'}
+    </div>
+    <div class="add-row">
+      <input type="text" id="newIncidencia" placeholder="Describir nueva incidencia...">
+      <button class="secondary" id="addIncidenciaBtn">Añadir</button>
+    </div>
+  `;
+
+  document.getElementById("saveBtn").addEventListener("click", () => saveSocio(s.id));
+  document.getElementById("addDonativoBtn").addEventListener("click", () => addDonativo(s.id));
+  document.getElementById("addIncidenciaBtn").addEventListener("click", () => addIncidencia(s.id));
+}
+
+function renderVoluntarioDetail(v) {
+  detailPanel.innerHTML = `
+    <div class="detail-header">
+      <div>
+        <h2>${v.nombre} ${v.apellidos}</h2>
+        <span class="id-badge">Nº Voluntario ${v.id}</span>
+      </div>
+      <button class="secondary" id="saveBtn">Guardar cambios</button>
+    </div>
+    <div class="field-grid">
+      <div class="field readonly"><label>Provincia</label><div class="value">${v.provincia}</div></div>
+      <div class="field readonly"><label>Fecha inscripción</label><div class="value">${v.fechaInscripcion}</div></div>
+      <div class="field readonly"><label>Cómo nos conoció</label><div class="value">${v.comoNosConocio}</div></div>
+      <div class="field">
+        <label>Estado</label>
+        <select id="f-estado" class="estado-select">
+          ${["Activo","Lista de espera"].map(e => `<option ${e===v.estado?"selected":""}>${e}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field" style="grid-column: span 2;">
+        <label>Tipo de voluntariado</label>
+        <select id="f-tipo">
+          ${["Acompañamiento hospitalario","Transporte adaptado","Apoyo administrativo","Eventos y captación de fondos","Atención telefónica Infocáncer","Talleres y sensibilización"]
+            .map(t => `<option ${t===v.tipoVoluntariado?"selected":""}>${t}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+  `;
+  document.getElementById("saveBtn").addEventListener("click", () => saveVoluntario(v.id));
+}
+
+async function saveSocio(id) {
+  const body = {
+    id,
+    cuota: document.getElementById("f-cuota").value,
+    periodicidad: document.getElementById("f-periodicidad").value,
+    cuentaBancaria: document.getElementById("f-cuenta").value,
+    observaciones: document.getElementById("f-obs").value
+  };
+  const res = await fetch(endpoint(), { method: "PATCH", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.ok) {
+    showToast("Cambios guardados en CERM");
+    selectItem(id);
+  } else {
+    showToast("Error: " + (data.error || "desconocido"));
+  }
+}
+
+async function addDonativo(id) {
+  const importe = document.getElementById("newDonativoImporte").value;
+  const concepto = document.getElementById("newDonativoConcepto").value;
+  if (!importe) { showToast("Indica un importe"); return; }
+  const res = await fetch(endpoint(), { method: "PATCH", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ id, nuevoDonativo: { importe: Number(importe), concepto: concepto || "Donativo puntual" } }) });
+  const data = await res.json();
+  if (data.ok) { showToast("Donativo añadido"); selectItem(id); }
+}
+
+async function addIncidencia(id) {
+  const desc = document.getElementById("newIncidencia").value;
+  if (!desc) { showToast("Describe la incidencia"); return; }
+  const res = await fetch(endpoint(), { method: "PATCH", headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ id, nuevaIncidencia: desc }) });
+  const data = await res.json();
+  if (data.ok) { showToast("Incidencia registrada"); selectItem(id); }
+}
+
+async function saveVoluntario(id) {
+  const body = {
+    id,
+    estado: document.getElementById("f-estado").value,
+    tipoVoluntariado: document.getElementById("f-tipo").value
+  };
+  const res = await fetch(endpoint(), { method: "PATCH", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.ok) {
+    showToast("Cambios guardados en Mago");
+    selectItem(id);
+  } else {
+    showToast("Error: " + (data.error || "desconocido"));
+  }
+}
+
+document.getElementById("searchBtn").addEventListener("click", async () => {
+  const q = searchInput.value.trim();
+  const items = q ? await fetchSearch(q) : await fetchAll();
+  renderResults(items);
+});
+searchInput.addEventListener("keydown", (e) => { if (e.key === "Enter") document.getElementById("searchBtn").click(); });
+
+document.getElementById("showAllBtn").addEventListener("click", async () => {
+  searchInput.value = "";
+  renderResults(await fetchAll());
+});
+
+document.getElementById("resetBtn").addEventListener("click", async () => {
+  await fetch(endpoint() + "?reset=true");
+  showToast("Datos reiniciados a los valores de fábrica");
+  renderResults(await fetchAll());
+  detailPanel.innerHTML = '<div class="empty-state">Selecciona un registro de la izquierda.</div>';
+});
+
+// Carga inicial
+(async () => { renderResults(await fetchAll()); })();
+</script>
+
+</body>
+</html>
