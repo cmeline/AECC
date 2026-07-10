@@ -7,26 +7,26 @@ const ORIGENES = ["Redes sociales", "Recomendación de un socio", "Web AECC", "I
 
 function seedVoluntarios() {
   return [
-    { id: "20001", nombre: "Cristina", apellidos: "Díaz Romero", provincia: "Madrid", tipoVoluntariado: "Acompañamiento hospitalario", estado: "Activo", fechaInscripcion: "2024-02-11", comoNosConocio: "Recomendación de un socio" },
-    { id: "20002", nombre: "Lucía", apellidos: "Álvarez Muñoz", provincia: "Barcelona", tipoVoluntariado: "Eventos y captación de fondos", estado: "Activo", fechaInscripcion: "2023-06-19", comoNosConocio: "Redes sociales" },
-    { id: "20003", nombre: "Alberto", apellidos: "Serrano Blanco", provincia: "Valencia", tipoVoluntariado: "Transporte adaptado", estado: "Lista de espera", fechaInscripcion: "2026-05-02", comoNosConocio: "Web AECC" },
-    { id: "20004", nombre: "Rocío", apellidos: "Ortega Castro", provincia: "Sevilla", tipoVoluntariado: "Apoyo administrativo", estado: "Activo", fechaInscripcion: "2022-09-14", comoNosConocio: "Infocáncer" },
-    { id: "20005", nombre: "Ignacio", apellidos: "Vega Rubio", provincia: "Vizcaya", tipoVoluntariado: "Atención telefónica Infocáncer", estado: "Activo", fechaInscripcion: "2021-11-30", comoNosConocio: "Evento solidario" },
-    { id: "20006", nombre: "Beatriz", apellidos: "Molina Ibáñez", provincia: "Málaga", tipoVoluntariado: "Talleres y sensibilización", estado: "Lista de espera", fechaInscripcion: "2026-06-20", comoNosConocio: "Redes sociales" },
-    { id: "20007", nombre: "Raúl", apellidos: "Delgado Santos", provincia: "Zaragoza", tipoVoluntariado: "Acompañamiento hospitalario", estado: "Activo", fechaInscripcion: "2020-04-07", comoNosConocio: "Universidad" },
-    { id: "20008", nombre: "Nuria", apellidos: "Cabrera Vidal", provincia: "Alicante", tipoVoluntariado: "Eventos y captación de fondos", estado: "Activo", fechaInscripcion: "2023-01-25", comoNosConocio: "Recomendación de un socio" },
-    { id: "20009", nombre: "Sergio", apellidos: "Iglesias Pascual", provincia: "Murcia", tipoVoluntariado: "Transporte adaptado", estado: "Lista de espera", fechaInscripcion: "2026-07-01", comoNosConocio: "Web AECC" },
-    { id: "20010", nombre: "Patricia", apellidos: "Herrero Reyes", provincia: "Las Palmas", tipoVoluntariado: "Apoyo administrativo", estado: "Activo", fechaInscripcion: "2019-10-03", comoNosConocio: "Infocáncer" },
-    { id: "20011", nombre: "Óscar", apellidos: "Cano Marín", provincia: "A Coruña", tipoVoluntariado: "Talleres y sensibilización", estado: "Activo", fechaInscripcion: "2024-08-16", comoNosConocio: "Evento solidario" },
-    { id: "20012", nombre: "Silvia", apellidos: "Vargas Crespo", provincia: "Valladolid", tipoVoluntariado: "Atención telefónica Infocáncer", estado: "Lista de espera", fechaInscripcion: "2026-04-28", comoNosConocio: "Redes sociales" },
-    { id: "20013", nombre: "Rubén", apellidos: "Pastor Domínguez", provincia: "Granada", tipoVoluntariado: "Acompañamiento hospitalario", estado: "Activo", fechaInscripcion: "2022-03-22", comoNosConocio: "Web AECC" },
-    { id: "20014", nombre: "Verónica", apellidos: "Bravo León", provincia: "Madrid", tipoVoluntariado: "Eventos y captación de fondos", estado: "Activo", fechaInscripcion: "2021-07-11", comoNosConocio: "Universidad" },
-    { id: "20015", nombre: "Diego", apellidos: "Soler Campos", provincia: "Barcelona", tipoVoluntariado: "Transporte adaptado", estado: "Activo", fechaInscripcion: "2020-12-05", comoNosConocio: "Infocáncer" },
-    { id: "20016", nombre: "Paula", apellidos: "Vicente Nieto", provincia: "Valencia", tipoVoluntariado: "Apoyo administrativo", estado: "Lista de espera", fechaInscripcion: "2026-06-30", comoNosConocio: "Recomendación de un socio" },
-    { id: "20017", nombre: "Adrián", apellidos: "Carmona Gallego", provincia: "Sevilla", tipoVoluntariado: "Talleres y sensibilización", estado: "Activo", fechaInscripcion: "2023-05-09", comoNosConocio: "Evento solidario" },
-    { id: "20018", nombre: "Eva", apellidos: "Suárez Cortés", provincia: "Vizcaya", tipoVoluntariado: "Atención telefónica Infocáncer", estado: "Activo", fechaInscripcion: "2019-02-14", comoNosConocio: "Redes sociales" },
-    { id: "20019", nombre: "Fernando", apellidos: "Peña Lozano", provincia: "Málaga", tipoVoluntariado: "Acompañamiento hospitalario", estado: "Lista de espera", fechaInscripcion: "2026-03-17", comoNosConocio: "Web AECC" },
-    { id: "20020", nombre: "Claudia", apellidos: "Aguilar Prieto", provincia: "Zaragoza", tipoVoluntariado: "Eventos y captación de fondos", estado: "Activo", fechaInscripcion: "2022-11-01", comoNosConocio: "Universidad" }
+    { id: "23054", nombre: "Cristina", apellidos: "Díaz Romero", provincia: "Madrid", tipoVoluntariado: "Acompañamiento hospitalario", estado: "Activo", fechaInscripcion: "2024-02-11", comoNosConocio: "Recomendación de un socio" },
+    { id: "25187", nombre: "Lucía", apellidos: "Álvarez Muñoz", provincia: "Barcelona", tipoVoluntariado: "Eventos y captación de fondos", estado: "Activo", fechaInscripcion: "2023-06-19", comoNosConocio: "Redes sociales" },
+    { id: "24693", nombre: "Alberto", apellidos: "Serrano Blanco", provincia: "Valencia", tipoVoluntariado: "Transporte adaptado", estado: "Lista de espera", fechaInscripcion: "2026-05-02", comoNosConocio: "Web AECC" },
+    { id: "21452", nombre: "Rocío", apellidos: "Ortega Castro", provincia: "Sevilla", tipoVoluntariado: "Apoyo administrativo", estado: "Activo", fechaInscripcion: "2022-09-14", comoNosConocio: "Infocáncer" },
+    { id: "29038", nombre: "Ignacio", apellidos: "Vega Rubio", provincia: "Vizcaya", tipoVoluntariado: "Atención telefónica Infocáncer", estado: "Activo", fechaInscripcion: "2021-11-30", comoNosConocio: "Evento solidario" },
+    { id: "26471", nombre: "Beatriz", apellidos: "Molina Ibáñez", provincia: "Málaga", tipoVoluntariado: "Talleres y sensibilización", estado: "Lista de espera", fechaInscripcion: "2026-06-20", comoNosConocio: "Redes sociales" },
+    { id: "27193", nombre: "Raúl", apellidos: "Delgado Santos", provincia: "Zaragoza", tipoVoluntariado: "Acompañamiento hospitalario", estado: "Activo", fechaInscripcion: "2020-04-07", comoNosConocio: "Universidad" },
+    { id: "28351", nombre: "Nuria", apellidos: "Cabrera Vidal", provincia: "Alicante", tipoVoluntariado: "Eventos y captación de fondos", estado: "Activo", fechaInscripcion: "2023-01-25", comoNosConocio: "Recomendación de un socio" },
+    { id: "23647", nombre: "Sergio", apellidos: "Iglesias Pascual", provincia: "Murcia", tipoVoluntariado: "Transporte adaptado", estado: "Lista de espera", fechaInscripcion: "2026-07-01", comoNosConocio: "Web AECC" },
+    { id: "25718", nombre: "Patricia", apellidos: "Herrero Reyes", provincia: "Las Palmas", tipoVoluntariado: "Apoyo administrativo", estado: "Activo", fechaInscripcion: "2019-10-03", comoNosConocio: "Infocáncer" },
+    { id: "21384", nombre: "Óscar", apellidos: "Cano Marín", provincia: "A Coruña", tipoVoluntariado: "Talleres y sensibilización", estado: "Activo", fechaInscripcion: "2024-08-16", comoNosConocio: "Evento solidario" },
+    { id: "27649", nombre: "Silvia", apellidos: "Vargas Crespo", provincia: "Valladolid", tipoVoluntariado: "Atención telefónica Infocáncer", estado: "Lista de espera", fechaInscripcion: "2026-04-28", comoNosConocio: "Redes sociales" },
+    { id: "29125", nombre: "Rubén", apellidos: "Pastor Domínguez", provincia: "Granada", tipoVoluntariado: "Acompañamiento hospitalario", estado: "Activo", fechaInscripcion: "2022-03-22", comoNosConocio: "Web AECC" },
+    { id: "24857", nombre: "Verónica", apellidos: "Bravo León", provincia: "Madrid", tipoVoluntariado: "Eventos y captación de fondos", estado: "Activo", fechaInscripcion: "2021-07-11", comoNosConocio: "Universidad" },
+    { id: "26192", nombre: "Diego", apellidos: "Soler Campos", provincia: "Barcelona", tipoVoluntariado: "Transporte adaptado", estado: "Activo", fechaInscripcion: "2020-12-05", comoNosConocio: "Infocáncer" },
+    { id: "28473", nombre: "Paula", apellidos: "Vicente Nieto", provincia: "Valencia", tipoVoluntariado: "Apoyo administrativo", estado: "Lista de espera", fechaInscripcion: "2026-06-30", comoNosConocio: "Recomendación de un socio" },
+    { id: "21935", nombre: "Adrián", apellidos: "Carmona Gallego", provincia: "Sevilla", tipoVoluntariado: "Talleres y sensibilización", estado: "Activo", fechaInscripcion: "2023-05-09", comoNosConocio: "Evento solidario" },
+    { id: "27384", nombre: "Eva", apellidos: "Suárez Cortés", provincia: "Vizcaya", tipoVoluntariado: "Atención telefónica Infocáncer", estado: "Activo", fechaInscripcion: "2019-02-14", comoNosConocio: "Redes sociales" },
+    { id: "29561", nombre: "Fernando", apellidos: "Peña Lozano", provincia: "Málaga", tipoVoluntariado: "Acompañamiento hospitalario", estado: "Lista de espera", fechaInscripcion: "2026-03-17", comoNosConocio: "Web AECC" },
+    { id: "23718", nombre: "Claudia", apellidos: "Aguilar Prieto", provincia: "Zaragoza", tipoVoluntariado: "Eventos y captación de fondos", estado: "Activo", fechaInscripcion: "2022-11-01", comoNosConocio: "Universidad" }
   ];
 }
 
@@ -39,9 +39,27 @@ const HEADERS = {
   "Content-Type": "application/json"
 };
 
+// Genera un ID de 5 dígitos que empieza por "2" y nunca tiene dos dígitos
+// iguales seguidos (para que el ZVA no se confunda al leerlo/oírlo en voz alta).
+function generarIdValido(existentes) {
+  let intento;
+  do {
+    let digitos = "2";
+    for (let i = 0; i < 4; i++) {
+      let d;
+      do {
+        d = String(Math.floor(Math.random() * 10));
+      } while (d === digitos[digitos.length - 1]);
+      digitos += d;
+    }
+    intento = digitos;
+  } while (existentes.has(intento));
+  return intento;
+}
+
 function nextId() {
-  const maxId = voluntarios.reduce((max, v) => Math.max(max, parseInt(v.id, 10)), 20000);
-  return String(maxId + 1);
+  const existentes = new Set(voluntarios.map(v => v.id));
+  return generarIdValido(existentes);
 }
 
 exports.handler = async function (event) {
