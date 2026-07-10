@@ -85,6 +85,25 @@ function seedSocios() {
 
 let socios = seedSocios();
 
+// Quita acentos y pasa a minúsculas, para que "Pérez García" y "Perez Garcia"
+// (o lo que transcriba el bot por voz) se consideren iguales.
+function normalize(str) {
+  return String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
+
+// Busca por nombre completo (o parcial) sin importar el orden de las palabras
+// ni los acentos. Ej: "Pablo Ruiz Picasso", "picasso pablo" o "Pablo" encuentran
+// al mismo socio. También permite buscar directamente por ID.
+function buscarPorNombre(query) {
+  const q = normalize(query);
+  const palabras = q.split(/\s+/).filter(Boolean);
+  return socios.filter(s => {
+    if (s.id.includes(query)) return true;
+    const nombreCompleto = normalize(s.nombre + " " + s.apellidos);
+    return palabras.every(p => nombreCompleto.includes(p));
+  });
+}
+
 // Genera un ID de 5 dígitos que empieza por "1" y nunca tiene dos dígitos
 // iguales seguidos (para que el ZVA no se confunda al leerlo/oírlo en voz alta).
 function generarIdValido(existentes) {
@@ -138,12 +157,7 @@ exports.handler = async function (event) {
       }
 
       if (params.q) {
-        const q = params.q.toLowerCase();
-        const results = socios.filter(s =>
-          s.nombre.toLowerCase().includes(q) ||
-          s.apellidos.toLowerCase().includes(q) ||
-          s.id.includes(q)
-        );
+        const results = buscarPorNombre(params.q);
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
       }
 
