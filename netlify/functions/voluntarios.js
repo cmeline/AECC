@@ -32,9 +32,21 @@ function seedVoluntarios() {
 
 let voluntarios = seedVoluntarios();
 
+let debugLog = [];
+
+function registrarLog(params) {
+  debugLog.unshift({ timestamp: new Date().toISOString(), params });
+  if (debugLog.length > 20) debugLog = debugLog.slice(0, 20);
+}
+
 // Quita acentos y pasa a minúsculas, igual que en socios.js
 function normalize(str) {
-  return String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  return String(str)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, "")
+    .trim();
 }
 
 // Busca por nombre completo (o parcial), sin importar orden de palabras ni acentos
@@ -105,10 +117,25 @@ exports.handler = async function (event) {
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
       }
 
+      if (params.viewlog === "true") {
+        return { statusCode: 200, headers: HEADERS, body: JSON.stringify(debugLog) };
+      }
+
       if (params.q || params.nombre || params.apellidos || params.apellido1 || params.apellido2) {
         const apellidosCombinados = params.apellidos || `${params.apellido1 || ""} ${params.apellido2 || ""}`.trim();
         const queryTexto = params.q || `${params.nombre || ""} ${apellidosCombinados}`.trim();
         const results = buscarPorNombre(queryTexto);
+
+        registrarLog({
+          nombre: params.nombre || null,
+          apellido1: params.apellido1 || null,
+          apellido2: params.apellido2 || null,
+          apellidos: params.apellidos || null,
+          q: params.q || null,
+          queryTexto,
+          matches: results.length
+        });
+
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
       }
 
