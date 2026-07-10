@@ -156,8 +156,9 @@ exports.handler = async function (event) {
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify(socio) };
       }
 
-      if (params.q) {
-        const results = buscarPorNombre(params.q);
+      if (params.q || params.nombre || params.apellidos) {
+        const queryTexto = params.q || `${params.nombre || ""} ${params.apellidos || ""}`.trim();
+        const results = buscarPorNombre(queryTexto);
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
       }
 
