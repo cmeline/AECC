@@ -156,8 +156,9 @@ exports.handler = async function (event) {
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify(socio) };
       }
 
-      if (params.q || params.nombre || params.apellidos) {
-        const queryTexto = params.q || `${params.nombre || ""} ${params.apellidos || ""}`.trim();
+      if (params.q || params.nombre || params.apellidos || params.apellido1 || params.apellido2) {
+        const apellidosCombinados = params.apellidos || `${params.apellido1 || ""} ${params.apellido2 || ""}`.trim();
+        const queryTexto = params.q || `${params.nombre || ""} ${apellidosCombinados}`.trim();
         const results = buscarPorNombre(queryTexto);
         return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
       }
