@@ -270,6 +270,9 @@
       <button class="ghost" id="showAllBtn" style="flex:1;">Ver todos</button>
       <button class="ghost" id="resetBtn" style="flex:1;" title="Restaura los datos de fábrica de esta pestaña">Reiniciar datos</button>
     </div>
+    <div class="search-row" id="newSocioRow" style="margin-top:-4px;">
+      <button class="secondary" id="newSocioBtn" style="flex:1;">+ Nuevo socio (alta)</button>
+    </div>
     <div class="result-list" id="resultList"></div>
   </div>
 
@@ -298,6 +301,7 @@ document.querySelectorAll(".tab").forEach(tab => {
     selected = null;
     searchInput.value = "";
     resultList.innerHTML = "";
+    document.getElementById("newSocioRow").style.display = currentTab === "socios" ? "flex" : "none";
     detailPanel.innerHTML = '<div class="empty-state">Selecciona un registro de la izquierda, o búscalo por nombre / número' +
       (currentTab === "socios" ? " de socio." : " de voluntario.") + '</div>';
   });
@@ -514,6 +518,61 @@ async function saveVoluntario(id) {
     showToast("Error: " + (data.error || "desconocido"));
   }
 }
+
+function renderNewSocioForm() {
+  detailPanel.innerHTML = `
+    <div class="detail-header">
+      <div><h2>Alta de nuevo socio</h2></div>
+    </div>
+    <div class="field-grid">
+      <div class="field"><label>Nombre</label><input type="text" id="n-nombre"></div>
+      <div class="field"><label>Apellidos</label><input type="text" id="n-apellidos"></div>
+      <div class="field"><label>Provincia</label><input type="text" id="n-provincia"></div>
+      <div class="field">
+        <label>Cuota</label>
+        <input type="text" id="n-cuota" value="5">
+      </div>
+      <div class="field">
+        <label>Periodicidad</label>
+        <select id="n-periodicidad">
+          <option>Mensual</option><option>Trimestral</option><option>Anual</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Cuenta bancaria (opcional)</label>
+        <input type="text" id="n-cuenta" placeholder="Se puede completar más tarde">
+      </div>
+    </div>
+    <div class="save-bar">
+      <button class="secondary" id="createSocioBtn">Dar de alta</button>
+    </div>
+  `;
+  document.getElementById("createSocioBtn").addEventListener("click", async () => {
+    const body = {
+      nombre: document.getElementById("n-nombre").value.trim(),
+      apellidos: document.getElementById("n-apellidos").value.trim(),
+      provincia: document.getElementById("n-provincia").value.trim(),
+      cuota: Number(document.getElementById("n-cuota").value) || 5,
+      periodicidad: document.getElementById("n-periodicidad").value,
+      cuentaBancaria: document.getElementById("n-cuenta").value.trim() || undefined
+    };
+    if (!body.nombre || !body.apellidos || !body.provincia) {
+      showToast("Nombre, apellidos y provincia son obligatorios");
+      return;
+    }
+    const res = await fetch(endpoint(), { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (data.ok) {
+      showToast("Socio dado de alta: nº " + data.socio.id);
+      renderResults(await fetchAll());
+      selectItem(data.socio.id);
+    } else {
+      showToast("Error: " + (data.error || "desconocido"));
+    }
+  });
+}
+
+document.getElementById("newSocioBtn").addEventListener("click", renderNewSocioForm);
 
 document.getElementById("searchBtn").addEventListener("click", async () => {
   const q = searchInput.value.trim();

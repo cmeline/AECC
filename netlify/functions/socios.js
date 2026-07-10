@@ -85,6 +85,29 @@ function seedSocios() {
 
 let socios = seedSocios();
 
+// Genera un ID de 5 dígitos que empieza por "1" y nunca tiene dos dígitos
+// iguales seguidos (para que el ZVA no se confunda al leerlo/oírlo en voz alta).
+function generarIdValido(existentes) {
+  let intento;
+  do {
+    let digitos = "1";
+    for (let i = 0; i < 4; i++) {
+      let d;
+      do {
+        d = String(Math.floor(Math.random() * 10));
+      } while (d === digitos[digitos.length - 1]);
+      digitos += d;
+    }
+    intento = digitos;
+  } while (existentes.has(intento));
+  return intento;
+}
+
+function nextId() {
+  const existentes = new Set(socios.map(s => s.id));
+  return generarIdValido(existentes);
+}
+
 const HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "Content-Type",
@@ -127,7 +150,7 @@ exports.handler = async function (event) {
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify(socios) };
     }
 
-    if (event.httpMethod === "PATCH" || event.httpMethod === "POST") {
+    if (event.httpMethod === "PATCH") {
       const data = JSON.parse(event.body || "{}");
       const { id } = data;
       if (!id) {
@@ -161,6 +184,30 @@ exports.handler = async function (event) {
       }
 
       return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, socio }) };
+    }
+
+    // POST = alta de nuevo socio (ej. persona que decide hacerse socio durante la llamada)
+    if (event.httpMethod === "POST") {
+      const data = JSON.parse(event.body || "{}");
+      if (!data.nombre || !data.apellidos || !data.provincia) {
+        return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: "Faltan campos obligatorios: nombre, apellidos, provincia" }) };
+      }
+      const nuevo = {
+        id: nextId(),
+        nombre: data.nombre,
+        apellidos: data.apellidos,
+        provincia: data.provincia,
+        genero: data.genero || "",
+        cuota: data.cuota !== undefined ? data.cuota : 5,
+        periodicidad: data.periodicidad || "Mensual",
+        cuentaBancaria: data.cuentaBancaria || "Pendiente de facilitar",
+        fechaAlta: new Date().toISOString().slice(0, 10),
+        donativos: [],
+        incidencias: [],
+        observaciones: data.observaciones || ""
+      };
+      socios.unshift(nuevo);
+      return { statusCode: 201, headers: HEADERS, body: JSON.stringify({ ok: true, socio: nuevo }) };
     }
 
     return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: "Método no permitido" }) };
