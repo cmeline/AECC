@@ -1,4 +1,6 @@
 /*
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
   X-Content-Type-Options: nosniff
+  Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' https:
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
