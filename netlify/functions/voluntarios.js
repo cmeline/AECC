@@ -95,91 +95,100 @@ exports.handler = async function (event) {
     return { statusCode: 200, headers: HEADERS, body: "" };
   }
 
+  const params = event.queryStringParameters || {};
+  const esConsultaDeLog = event.httpMethod === "GET" && params.viewlog === "true";
+
+  let resultado;
   try {
-    if (event.httpMethod === "GET") {
-      const params = event.queryStringParameters || {};
-
-      if (params.reset === "true") {
-        voluntarios = seedVoluntarios();
-        return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, message: "Datos de voluntarios reiniciados" }) };
-      }
-
-      if (params.id) {
-        const v = voluntarios.find(v => v.id === params.id);
-        if (!v) {
-          return { statusCode: 404, headers: HEADERS, body: JSON.stringify({ error: "Voluntario no encontrado", id: params.id }) };
-        }
-        return { statusCode: 200, headers: HEADERS, body: JSON.stringify(v) };
-      }
-
-      if (params.provincia) {
-        const results = voluntarios.filter(v => v.provincia.toLowerCase() === params.provincia.toLowerCase());
-        return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
-      }
-
-      if (params.viewlog === "true") {
-        return { statusCode: 200, headers: HEADERS, body: JSON.stringify(debugLog) };
-      }
-
-      if (params.q || params.nombre || params.apellidos || params.apellido1 || params.apellido2) {
-        const apellidosCombinados = params.apellidos || `${params.apellido1 || ""} ${params.apellido2 || ""}`.trim();
-        const queryTexto = params.q || `${params.nombre || ""} ${apellidosCombinados}`.trim();
-        const results = buscarPorNombre(queryTexto);
-
-        registrarLog({
-          nombre: params.nombre || null,
-          apellido1: params.apellido1 || null,
-          apellido2: params.apellido2 || null,
-          apellidos: params.apellidos || null,
-          q: params.q || null,
-          queryTexto,
-          matches: results.length
-        });
-
-        return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
-      }
-
-      return { statusCode: 200, headers: HEADERS, body: JSON.stringify(voluntarios) };
-    }
-
-    if (event.httpMethod === "PATCH") {
-      const data = JSON.parse(event.body || "{}");
-      const { id } = data;
-      if (!id) {
-        return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: "Falta el campo id" }) };
-      }
-      const v = voluntarios.find(v => v.id === id);
-      if (!v) {
-        return { statusCode: 404, headers: HEADERS, body: JSON.stringify({ error: "Voluntario no encontrado", id }) };
-      }
-      ["estado", "tipoVoluntariado", "provincia"].forEach(field => {
-        if (data[field] !== undefined) v[field] = data[field];
-      });
-      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, voluntario: v }) };
-    }
-
-    // POST = nueva inscripción (alta ágil desde llamada)
-    if (event.httpMethod === "POST") {
-      const data = JSON.parse(event.body || "{}");
-      if (!data.nombre || !data.apellidos || !data.provincia) {
-        return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: "Faltan campos obligatorios: nombre, apellidos, provincia" }) };
-      }
-      const nuevo = {
-        id: nextId(),
-        nombre: data.nombre,
-        apellidos: data.apellidos,
-        provincia: data.provincia,
-        tipoVoluntariado: data.tipoVoluntariado || TIPOS[0],
-        estado: data.estado || "Activo",
-        fechaInscripcion: new Date().toISOString().slice(0, 10),
-        comoNosConocio: data.comoNosConocio || "Infocáncer"
-      };
-      voluntarios.unshift(nuevo);
-      return { statusCode: 201, headers: HEADERS, body: JSON.stringify({ ok: true, voluntario: nuevo }) };
-    }
-
-    return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: "Método no permitido" }) };
+    resultado = await manejarPeticion(event, params);
   } catch (err) {
-    return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: err.message }) };
+    resultado = { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: err.message }) };
   }
+
+  if (!esConsultaDeLog) {
+    let cuerpoRespuesta;
+    try { cuerpoRespuesta = JSON.parse(resultado.body); } catch (e) { cuerpoRespuesta = resultado.body; }
+    registrarLog({
+      method: event.httpMethod,
+      query: params,
+      body: event.body ? (() => { try { return JSON.parse(event.body); } catch (e) { return event.body; } })() : null,
+      statusCode: resultado.statusCode,
+      respuesta: cuerpoRespuesta
+    });
+  }
+
+  return resultado;
 };
+
+async function manejarPeticion(event, params) {
+  if (event.httpMethod === "GET") {
+    if (params.reset === "true") {
+      voluntarios = seedVoluntarios();
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, message: "Datos de voluntarios reiniciados" }) };
+    }
+
+    if (params.id) {
+      const v = voluntarios.find(v => v.id === params.id);
+      if (!v) {
+        return { statusCode: 404, headers: HEADERS, body: JSON.stringify({ error: "Voluntario no encontrado", id: params.id }) };
+      }
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify(v) };
+    }
+
+    if (params.provincia) {
+      const results = voluntarios.filter(v => v.provincia.toLowerCase() === params.provincia.toLowerCase());
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
+    }
+
+    if (params.viewlog === "true") {
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify(debugLog) };
+    }
+
+    if (params.q || params.nombre || params.apellidos || params.apellido1 || params.apellido2) {
+      const apellidosCombinados = params.apellidos || `${params.apellido1 || ""} ${params.apellido2 || ""}`.trim();
+      const queryTexto = params.q || `${params.nombre || ""} ${apellidosCombinados}`.trim();
+      const results = buscarPorNombre(queryTexto);
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
+    }
+
+    return { statusCode: 200, headers: HEADERS, body: JSON.stringify(voluntarios) };
+  }
+
+  if (event.httpMethod === "PATCH") {
+    const data = JSON.parse(event.body || "{}");
+    const { id } = data;
+    if (!id) {
+      return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: "Falta el campo id" }) };
+    }
+    const v = voluntarios.find(v => v.id === id);
+    if (!v) {
+      return { statusCode: 404, headers: HEADERS, body: JSON.stringify({ error: "Voluntario no encontrado", id }) };
+    }
+    ["estado", "tipoVoluntariado", "provincia"].forEach(field => {
+      if (data[field] !== undefined) v[field] = data[field];
+    });
+    return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, voluntario: v }) };
+  }
+
+  // POST = nueva inscripción (alta ágil desde llamada)
+  if (event.httpMethod === "POST") {
+    const data = JSON.parse(event.body || "{}");
+    if (!data.nombre || !data.apellidos || !data.provincia) {
+      return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: "Faltan campos obligatorios: nombre, apellidos, provincia" }) };
+    }
+    const nuevo = {
+      id: nextId(),
+      nombre: data.nombre,
+      apellidos: data.apellidos,
+      provincia: data.provincia,
+      tipoVoluntariado: data.tipoVoluntariado || TIPOS[0],
+      estado: data.estado || "Activo",
+      fechaInscripcion: new Date().toISOString().slice(0, 10),
+      comoNosConocio: data.comoNosConocio || "Infocáncer"
+    };
+    voluntarios.unshift(nuevo);
+    return { statusCode: 201, headers: HEADERS, body: JSON.stringify({ ok: true, voluntario: nuevo }) };
+  }
+
+  return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: "Método no permitido" }) };
+}

@@ -151,110 +151,123 @@ exports.handler = async function (event) {
     return { statusCode: 200, headers: HEADERS, body: "" };
   }
 
+  const params = event.queryStringParameters || {};
+  const esConsultaDeLog = event.httpMethod === "GET" && params.viewlog === "true";
+
+  let resultado;
   try {
-    if (event.httpMethod === "GET") {
-      const params = event.queryStringParameters || {};
-
-      if (params.reset === "true") {
-        socios = seedSocios();
-        return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, message: "Datos de socios reiniciados" }) };
-      }
-
-      if (params.id) {
-        const socio = socios.find(s => s.id === params.id);
-        if (!socio) {
-          return { statusCode: 404, headers: HEADERS, body: JSON.stringify({ error: "Socio no encontrado", id: params.id }) };
-        }
-        return { statusCode: 200, headers: HEADERS, body: JSON.stringify(socio) };
-      }
-
-      if (params.viewlog === "true") {
-        return { statusCode: 200, headers: HEADERS, body: JSON.stringify(debugLog) };
-      }
-
-      if (params.q || params.nombre || params.apellidos || params.apellido1 || params.apellido2) {
-        const apellidosCombinados = params.apellidos || `${params.apellido1 || ""} ${params.apellido2 || ""}`.trim();
-        const queryTexto = params.q || `${params.nombre || ""} ${apellidosCombinados}`.trim();
-        const results = buscarPorNombre(queryTexto);
-
-        registrarLog({
-          nombre: params.nombre || null,
-          apellido1: params.apellido1 || null,
-          apellido2: params.apellido2 || null,
-          apellidos: params.apellidos || null,
-          q: params.q || null,
-          queryTexto,
-          matches: results.length
-        });
-
-        return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
-      }
-
-      return { statusCode: 200, headers: HEADERS, body: JSON.stringify(socios) };
-    }
-
-    if (event.httpMethod === "PATCH") {
-      const data = JSON.parse(event.body || "{}");
-      const { id } = data;
-      if (!id) {
-        return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: "Falta el campo id" }) };
-      }
-      const socio = socios.find(s => s.id === id);
-      if (!socio) {
-        return { statusCode: 404, headers: HEADERS, body: JSON.stringify({ error: "Socio no encontrado", id }) };
-      }
-
-      // Actualización de campos simples
-      ["cuota", "periodicidad", "cuentaBancaria", "provincia", "observaciones"].forEach(field => {
-        if (data[field] !== undefined) socio[field] = data[field];
-      });
-
-      // Añadir un nuevo donativo
-      if (data.nuevoDonativo) {
-        socio.donativos.unshift({
-          fecha: data.nuevoDonativo.fecha || new Date().toISOString().slice(0, 10),
-          importe: data.nuevoDonativo.importe,
-          concepto: data.nuevoDonativo.concepto || "Donativo puntual"
-        });
-      }
-
-      // Añadir una nueva incidencia
-      if (data.nuevaIncidencia) {
-        socio.incidencias.unshift({
-          fecha: new Date().toISOString().slice(0, 10),
-          descripcion: data.nuevaIncidencia
-        });
-      }
-
-      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, socio }) };
-    }
-
-    // POST = alta de nuevo socio (ej. persona que decide hacerse socio durante la llamada)
-    if (event.httpMethod === "POST") {
-      const data = JSON.parse(event.body || "{}");
-      if (!data.nombre || !data.apellidos || !data.provincia) {
-        return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: "Faltan campos obligatorios: nombre, apellidos, provincia" }) };
-      }
-      const nuevo = {
-        id: nextId(),
-        nombre: data.nombre,
-        apellidos: data.apellidos,
-        provincia: data.provincia,
-        genero: data.genero || "",
-        cuota: data.cuota !== undefined ? data.cuota : 5,
-        periodicidad: data.periodicidad || "Mensual",
-        cuentaBancaria: data.cuentaBancaria || "Pendiente de facilitar",
-        fechaAlta: new Date().toISOString().slice(0, 10),
-        donativos: [],
-        incidencias: [],
-        observaciones: data.observaciones || ""
-      };
-      socios.unshift(nuevo);
-      return { statusCode: 201, headers: HEADERS, body: JSON.stringify({ ok: true, socio: nuevo }) };
-    }
-
-    return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: "Método no permitido" }) };
+    resultado = await manejarPeticion(event, params);
   } catch (err) {
-    return { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: err.message }) };
+    resultado = { statusCode: 500, headers: HEADERS, body: JSON.stringify({ error: err.message }) };
   }
+
+  // Registro genérico: toda petición (menos la propia consulta del log) queda
+  // grabada automáticamente con lo que entró y lo que salió. Así, cualquier
+  // acción nueva que añadamos en el futuro (altas, otros campos, etc.) queda
+  // visible en ?viewlog=true sin tener que tocar este archivo de nuevo.
+  if (!esConsultaDeLog) {
+    let cuerpoRespuesta;
+    try { cuerpoRespuesta = JSON.parse(resultado.body); } catch (e) { cuerpoRespuesta = resultado.body; }
+    registrarLog({
+      method: event.httpMethod,
+      query: params,
+      body: event.body ? (() => { try { return JSON.parse(event.body); } catch (e) { return event.body; } })() : null,
+      statusCode: resultado.statusCode,
+      respuesta: cuerpoRespuesta
+    });
+  }
+
+  return resultado;
 };
+
+async function manejarPeticion(event, params) {
+  if (event.httpMethod === "GET") {
+    if (params.reset === "true") {
+      socios = seedSocios();
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, message: "Datos de socios reiniciados" }) };
+    }
+
+    if (params.id) {
+      const socio = socios.find(s => s.id === params.id);
+      if (!socio) {
+        return { statusCode: 404, headers: HEADERS, body: JSON.stringify({ error: "Socio no encontrado", id: params.id }) };
+      }
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify(socio) };
+    }
+
+    if (params.viewlog === "true") {
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify(debugLog) };
+    }
+
+    if (params.q || params.nombre || params.apellidos || params.apellido1 || params.apellido2) {
+      const apellidosCombinados = params.apellidos || `${params.apellido1 || ""} ${params.apellido2 || ""}`.trim();
+      const queryTexto = params.q || `${params.nombre || ""} ${apellidosCombinados}`.trim();
+      const results = buscarPorNombre(queryTexto);
+      return { statusCode: 200, headers: HEADERS, body: JSON.stringify(results) };
+    }
+
+    return { statusCode: 200, headers: HEADERS, body: JSON.stringify(socios) };
+  }
+
+  if (event.httpMethod === "PATCH") {
+    const data = JSON.parse(event.body || "{}");
+    const { id } = data;
+    if (!id) {
+      return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: "Falta el campo id" }) };
+    }
+    const socio = socios.find(s => s.id === id);
+    if (!socio) {
+      return { statusCode: 404, headers: HEADERS, body: JSON.stringify({ error: "Socio no encontrado", id }) };
+    }
+
+    // Actualización de campos simples
+    ["cuota", "periodicidad", "cuentaBancaria", "provincia", "observaciones"].forEach(field => {
+      if (data[field] !== undefined) socio[field] = data[field];
+    });
+
+    // Añadir un nuevo donativo
+    if (data.nuevoDonativo) {
+      socio.donativos.unshift({
+        fecha: data.nuevoDonativo.fecha || new Date().toISOString().slice(0, 10),
+        importe: data.nuevoDonativo.importe,
+        concepto: data.nuevoDonativo.concepto || "Donativo puntual"
+      });
+    }
+
+    // Añadir una nueva incidencia
+    if (data.nuevaIncidencia) {
+      socio.incidencias.unshift({
+        fecha: new Date().toISOString().slice(0, 10),
+        descripcion: data.nuevaIncidencia
+      });
+    }
+
+    return { statusCode: 200, headers: HEADERS, body: JSON.stringify({ ok: true, socio }) };
+  }
+
+  // POST = alta de nuevo socio (ej. persona que decide hacerse socio durante la llamada)
+  if (event.httpMethod === "POST") {
+    const data = JSON.parse(event.body || "{}");
+    if (!data.nombre || !data.apellidos || !data.provincia) {
+      return { statusCode: 400, headers: HEADERS, body: JSON.stringify({ error: "Faltan campos obligatorios: nombre, apellidos, provincia" }) };
+    }
+    const nuevo = {
+      id: nextId(),
+      nombre: data.nombre,
+      apellidos: data.apellidos,
+      provincia: data.provincia,
+      genero: data.genero || "",
+      cuota: data.cuota !== undefined ? data.cuota : 5,
+      periodicidad: data.periodicidad || "Mensual",
+      cuentaBancaria: data.cuentaBancaria || "Pendiente de facilitar",
+      fechaAlta: new Date().toISOString().slice(0, 10),
+      donativos: [],
+      incidencias: [],
+      observaciones: data.observaciones || ""
+    };
+    socios.unshift(nuevo);
+    return { statusCode: 201, headers: HEADERS, body: JSON.stringify({ ok: true, socio: nuevo }) };
+  }
+
+  return { statusCode: 405, headers: HEADERS, body: JSON.stringify({ error: "Método no permitido" }) };
+}
