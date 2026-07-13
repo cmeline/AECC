@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bizneo · Ofertas Voluntariado AECC</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f7f5;
+            color: #222;
+            font-size: 13px;
+        }
+
+        header {
+            background: #00833e;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        header .ribbon { font-size: 20px; }
+        header .title {
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        header .subtitle {
+            color: rgba(255,255,255,0.75);
+            font-size: 11px;
+        }
+        header .bizneo-badge {
+            margin-left: auto;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .selector-section {
+            padding: 14px 16px 10px;
+            background: white;
+            border-bottom: 1px solid #e0e8e0;
+        }
+        .selector-section label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: #00833e;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+        select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1.5px solid #c8dcc8;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #222;
+            background: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300833e' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+        select:focus { outline: none; border-color: #00833e; }
+
+        .results {
+            padding: 12px 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px 16px;
+            color: #888;
+        }
+        .empty-state .icon { font-size: 32px; margin-bottom: 8px; }
+        .empty-state p { font-size: 12px; line-height: 1.5; }
+
+        .no-offers {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+        }
+        .no-offers .icon { font-size: 24px; margin-bottom: 6px; }
+        .no-offers .title { font-weight: 700; color: #f57c00; font-size: 13px; }
+        .no-offers .msg { color: #666; font-size: 12px; margin-top: 4px; line-height: 1.5; }
+
+        .offers-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .offers-header .count {
+            font-size: 12px;
+            color: #00833e;
+            font-weight: 700;
+        }
+        .offers-header .source {
+            font-size: 10px;
+            color: #aaa;
+        }
+
+        .offer-card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0ece0;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .offer-card-header {
+            background: #00833e;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .offer-card-header .offer-icon { font-size: 16px; }
+        .offer-card-header .offer-title {
+            color: white;
+            font-weight: 700;
+            font-size: 12px;
+            flex: 1;
+        }
+        .offer-card-header .offer-type {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 8px;
+        }
+
+        .offer-card-body {
+            padding: 10px 12px;
+        }
+        .offer-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            margin-bottom: 6px;
+            font-size: 12px;
+            color: #444;
+        }
+        .offer-row .label {
+            color: #888;
+            min-width: 80px;
+            font-size: 11px;
+        }
+        .offer-row .value { font-weight: 500; }
+
+        .tag {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #00833e;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 8px;
+            margin-right: 4px;
+            font-weight: 600;
+        }
+        .tag.urgent {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+
+        .waitlist-btn {
+            width: 100%;
+            margin-top: 14px;
+            padding: 10px;
+            background: #fff8e1;
+            border: 1.5px dashed #ffb300;
+            border-radius: 8px;
+            color: #f57c00;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+        }
+        .waitlist-btn:hover { background: #fff3cd; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="ribbon">🎗️</div>
+    <div>
+        <div class="title">Ofertas de Voluntariado</div>
+        <div class="subtitle">Asociación Española Contra el Cáncer</div>
+    </div>
+    <div class="bizneo-badge">vía Bizneo</div>
+    <div style="font-family:'SF Mono',Menlo,monospace; font-size:10px; background:rgba(255,255,255,0.15); color:white; padding:3px 8px; border-radius:10px; border:1px solid rgba(255,255,255,0.3);">v1.0</div>
+</header>
+
+<div class="selector-section">
+    <label>📍 Selecciona provincia</label>
+    <select id="provinciaSelect" onchange="mostrarOfertas()">
+        <option value="">— Elige una provincia —</option>
+        <option value="madrid">Madrid</option>
+        <option value="barcelona">Barcelona</option>
+        <option value="valencia">Valencia</option>
+        <option value="sevilla">Sevilla</option>
+        <option value="bilbao">Bilbao / Vizcaya</option>
+        <option value="zaragoza">Zaragoza</option>
+        <option value="malaga">Málaga</option>
+        <option value="murcia">Murcia</option>
+        <option value="valladolid">Valladolid</option>
+        <option value="cordoba">Córdoba</option>
+        <option value="alicante">Alicante</option>
+        <option value="santander">Santander / Cantabria</option>
+        <option value="otras">Otras provincias</option>
+    </select>
+</div>
+
+<div class="results" id="results">
+    <div class="empty-state">
+        <div class="icon">🔍</div>
+        <p>Selecciona una provincia para ver<br>las ofertas de voluntariado disponibles.</p>
+    </div>
+</div>
+
+<script>
+const ofertas = {
+    madrid: [
+        {
+            icon: "🏥",
+            titulo: "Acompañamiento Hospitalario",
+            tipo: "Presencial",
+            descripcion: "Apoyo emocional a pacientes en planta de oncología.",
+            horas: "4h/semana",
+            inicio: "1 julio 2026",
+            cierre: "20 junio 2026",
+            plazas: 3,
+            requisitos: "Mayores de 25 años, empatía, formación previa AECC",
+            urgente: true
+        },
+        {
+            icon: "🎪",
+            titulo: "Cuestación Nacional",
+            tipo: "Presencial",
+            descripcion: "Recaudación de fondos en puntos estratégicos de la ciudad.",
+            horas: "1 fin de semana",
+            inicio: "28 junio 2026",
+            cierre: "25 junio 2026",
+            plazas: 12,
+            requisitos: "Mayores de 18 años",
+            urgente: false
+        },
+        {
+            icon: "💻",
+            titulo: "Apoyo Administrativo Online",
+            tipo: "Remoto",
+            descripcion: "Gestión de base de datos de socios y apoyo a campañas digitales.",
+            horas: "5h/semana",
+            inicio: "15 julio 2026",
+            cierre: "30 junio 2026",
+            plazas: 2,
+            requisitos: "Conocimientos ofimática, disponibilidad horaria mañanas",
+            urgente: false
+        }
+    ],
+    barcelona: [
+        {
+            icon: "📚",
+            titulo: "Talleres de Prevención",
+            tipo: "Presencial",
+            descripcion: "Impartición de talleres de hábitos saludables en colegios y empresas.",
+            horas: "3h/semana",
+            inicio: "1 septiembre 2026",
+            cierre: "15 julio 2026",
+            plazas: 4,
+            requisitos: "Perfil sanitario o educativo valorable",
+            urgente: false
+        },
+        {
+            icon: "🎪",
+            titulo: "Cuestación Nacional",
+            tipo: "Presencial",
+            descripcion: "Recaudación de fondos en puntos estratégicos de la ciudad.",
+            horas: "1 fin de semana",
+            inicio: "28 junio 2026",
+            cierre: "25 junio 2026",
+            plazas: 15,
+            requisitos: "Mayores de 18 años",
+            urgente: true
+        }
+    ],
+    valencia: [
+        {
+            icon: "🏥",
+            titulo: "Acompañamiento Hospitalario",
+            tipo: "Presencial",
+            descripcion: "Visitas y apoyo emocional a pacientes oncológicos en el Hospital La Fe.",
+            horas: "3h/semana",
+            inicio: "1 agosto 2026",
+            cierre: "10 julio 2026",
+            plazas: 2,
+            requisitos: "Mayores de 25 años, formación previa AECC",
+            urgente: false
+        }
+    ],
+    sevilla: [
+        {
+            icon: "🎪",
+            titulo: "Cuestación Nacional",
+            tipo: "Presencial",
+            descripcion: "Recaudación de fondos en puntos estratégicos de la ciudad.",
+            horas: "1 fin de semana",
+            inicio: "28 junio 2026",
+            cierre: "25 junio 2026",
+            plazas: 8,
+            requisitos: "Mayores de 18 años",
+            urgente: true
+        },
+        {
+            icon: "🚶",
+            titulo: "En Marcha Contra el Cáncer",
+            tipo: "Presencial",
+            descripcion: "Organización y apoyo logístico en marcha solidaria benéfica.",
+            horas: "Puntual — 1 día",
+            inicio: "12 octubre 2026",
+            cierre: "1 octubre 2026",
+            plazas: 20,
+            requisitos: "Mayores de 16 años",
+            urgente: false
+        }
+    ],
+    bilbao: [
+        {
+            icon: "📚",
+            titulo: "Talleres de Deshabituación Tabáquica",
+            tipo: "Presencial",
+            descripcion: "Apoyo en talleres grupales para dejar de fumar.",
+            horas: "2h/semana",
+            inicio: "1 septiembre 2026",
+            cierre: "20 julio 2026",
+            plazas: 3,
+            requisitos: "Perfil sanitario o psicológico",
+            urgente: false
+        }
+    ],
+    zaragoza: [
+        {
+            icon: "🎪",
+            titulo: "Cuestación Nacional",
+            tipo: "Presencial",
+            descripcion: "Recaudación de fondos en puntos estratégicos de la ciudad.",
+            horas: "1 fin de semana",
+            inicio: "28 junio 2026",
+            cierre: "25 junio 2026",
+            plazas: 6,
+            requisitos: "Mayores de 18 años",
+            urgente: true
+        }
+    ],
+    malaga: [
+        {
+            icon: "☀️",
+            titulo: "Campaña Protección Solar",
+            tipo: "Presencial",
+            descripcion: "Sensibilización sobre prevención del cáncer de piel en playas y espacios públicos.",
+            horas: "4h/semana (verano)",
+            inicio: "1 julio 2026",
+            cierre: "20 junio 2026",
+            plazas: 5,
+            requisitos: "Mayores de 18 años, don de gentes",
+            urgente: true
+        },
+        {
+            icon: "🚶",
+            titulo: "En Marcha Contra el Cáncer",
+            tipo: "Presencial",
+            descripcion: "Organización y apoyo logístico en marcha solidaria benéfica.",
+            horas: "Puntual — 1 día",
+            inicio: "18 octubre 2026",
+            cierre: "5 octubre 2026",
+            plazas: 15,
+            requisitos: "Mayores de 16 años",
+            urgente: false
+        }
+    ],
+    valladolid: [
+        {
+            icon: "💻",
+            titulo: "Apoyo Digital a Pacientes",
+            tipo: "Remoto",
+            descripcion: "Ayuda a pacientes mayores con uso de apps y recursos online de la AECC.",
+            horas: "3h/semana",
+            inicio: "1 septiembre 2026",
+            cierre: "31 julio 2026",
+            plazas: 2,
+            requisitos: "Paciencia, conocimientos básicos digitales",
+            urgente: false
+        }
+    ]
+};
+
+function mostrarOfertas() {
+    const provincia = document.getElementById('provinciaSelect').value;
+    const results = document.getElementById('results');
+
+    if (!provincia) {
+        results.innerHTML = `
+            <div class="empty-state">
+                <div class="icon">🔍</div>
+                <p>Selecciona una provincia para ver<br>las ofertas de voluntariado disponibles.</p>
+            </div>`;
+        return;
+    }
+
+    const lista = ofertas[provincia];
+
+    if (!lista || lista.length === 0) {
+        results.innerHTML = `
+            <div class="no-offers">
+                <div class="icon">📋</div>
+                <div class="title">Sin ofertas disponibles actualmente</div>
+                <div class="msg">No hay plazas abiertas en esta provincia en este momento.<br>Puedes ofrecer al voluntario incluirse en la <strong>lista de espera</strong>.</div>
+            </div>
+            <button class="waitlist-btn" onclick="alert('✅ Lista de espera registrada en Bizneo')">
+                📝 Apuntar en lista de espera
+            </button>`;
+        return;
+    }
+
+    let html = `
+        <div class="offers-header">
+            <span class="count">✅ ${lista.length} oferta${lista.length > 1 ? 's' : ''} disponible${lista.length > 1 ? 's' : ''}</span>
+            <span class="source">Bizneo · actualizado hoy</span>
+        </div>`;
+
+    lista.forEach(o => {
+        html += `
+        <div class="offer-card">
+            <div class="offer-card-header">
+                <span class="offer-icon">${o.icon}</span>
+                <span class="offer-title">${o.titulo}</span>
+                <span class="offer-type">${o.tipo}</span>
+            </div>
+            <div class="offer-card-body">
+                <div class="offer-row">
+                    <span class="label">Descripción</span>
+                    <span class="value">${o.descripcion}</span>
+                </div>
+                <div class="offer-row">
+                    <span class="label">Dedicación</span>
+                    <span class="value">${o.horas}</span>
+                </div>
+                <div class="offer-row">
+                    <span class="label">Inicio</span>
+                    <span class="value">${o.inicio}</span>
+                </div>
+                <div class="offer-row">
+                    <span class="label">Cierre</span>
+                    <span class="value">${o.cierre} ${o.urgente ? '<span class="tag urgent">⚡ Urgente</span>' : ''}</span>
+                </div>
+                <div class="offer-row">
+                    <span class="label">Plazas</span>
+                    <span class="value"><span class="tag">${o.plazas} plaza${o.plazas > 1 ? 's' : ''}</span></span>
+                </div>
+                <div class="offer-row">
+                    <span class="label">Requisitos</span>
+                    <span class="value">${o.requisitos}</span>
+                </div>
+            </div>
+        </div>`;
+    });
+
+    results.innerHTML = html;
+}
+</script>
+</body>
+</html>
